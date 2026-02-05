@@ -97,7 +97,8 @@ async def get_users():
     
 # Enoint que devuelva un usuario a partir de su id usando SQLAlchemy
 @app.get("/users/{user_id}")
-async def get_user(user_id: int):
+#async def get_user(user_id: int):
+async def get_user(user_id: Union[int, str]):
     try:
         #query = text("SELECT * FROM user WHERE id = :user_id")
         query = text(f"SELECT * FROM user WHERE id = {user_id}")
