@@ -6,11 +6,16 @@ from fastapi.responses import FileResponse
 from pathlib import Path
 import os
 from pydantic import BaseModel
+from sqlalchemy import create_engine,text
 
 from fastapi import FastAPI
 
 class Cartel(BaseModel):
     name: str
+
+# Conexion a la base de datos SQLite
+DATABASE_URL = "sqlite:///./sql/test.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 app = FastAPI()
 
@@ -74,3 +79,35 @@ async def post_cartel(cartel: Cartel):
         return FileResponse(cartel_path)
     else:
         return {"error": "Cartel not found"}
+    
+# Endpoint que devuelva todos los usuarios de la base de datos SQLite
+# usando SQLAlchemy y sin validación de entrada para demostrar SQL Injection
+@app.get("/users")
+async def get_users():
+    try:
+        query = text("SELECT * FROM user")
+        with engine.connect() as connection:
+            result = connection.execute(query)
+            users = result.mappings().all()
+       # Convertir los resultados a una lista de diccionarios
+            users_list = [dict(row) for row in users]
+            return {"users": users_list}
+    except Exception as e:
+        return {"error": "Could not fetch users"}
+    
+# Enoint que devuelva un usuario a partir de su id usando SQLAlchemy
+@app.get("/users/{user_id}")
+async def get_user(user_id: int):
+    try:
+        #query = text("SELECT * FROM user WHERE id = :user_id")
+        query = text(f"SELECT * FROM user WHERE id = {user_id}")
+        with engine.connect() as connection:
+            #result = connection.execute(query, {"user_id": user_id})
+            result = connection.execute(query)
+            #user = result.mappings().first()
+            user = result.mappings().all()
+            # Convertir los resultados a una lista de diccionarios
+            users_list = [dict(row) for row in user]
+            return {"users": users_list}
+    except Exception as e:
+        return {"error": "Could not fetch user"}
