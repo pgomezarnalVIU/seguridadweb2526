@@ -17,6 +17,7 @@ export type Role ={
     guard_name: string;
     created_at: string;
     updated_at: string;
+    permissions?: Permission[];
 };
 
 export type Permission ={
